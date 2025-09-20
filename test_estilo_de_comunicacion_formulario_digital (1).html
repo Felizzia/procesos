@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Descubre tu Estilo de Comunicación</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#9ca3af; --text:#e5e7eb; --accent:#22d3ee; }
+    html,body{height:100%}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; background:linear-gradient(180deg,#020617,#0b1224 30%,#0f172a); color:var(--text)}
+    .wrap{max-width:900px; margin:0 auto; padding:24px}
+    .card{background:rgba(17,24,39,.75); border:1px solid #1f2937; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); backdrop-filter:saturate(140%) blur(6px)}
+    h1{font-size:clamp(1.4rem,2.7vw,2rem); margin:.3rem 0 1rem}
+    h2{font-size:1.1rem; color:#a5b4fc; margin:1.2rem 0 .6rem}
+    .muted{color:var(--muted)}
+    fieldset{border:1px solid #243244; border-radius:14px; padding:16px; margin:14px 0}
+    legend{padding:0 8px; color:#c7d2fe}
+    .q{display:grid; gap:10px}
+    .opt{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; padding:10px 12px; border-radius:10px; border:1px solid #1f2937}
+    .opt:hover{border-color:#34465b; background:rgba(3,7,18,.3)}
+    label{cursor:pointer}
+    .row{display:flex; flex-wrap:wrap; gap:10px}
+    button{cursor:pointer; border:0; border-radius:12px; padding:12px 16px; font-weight:600; color:#0b1224; background:var(--accent)}
+    button.secondary{background:#94a3b8; color:#0b1224}
+    .grid{display:grid; gap:12px}
+    .result{border:1px dashed #334155; border-radius:12px; padding:14px}
+    .totals{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+    .pill{background:#0b1323; border:1px solid #243244; border-radius:10px; padding:10px; text-align:center}
+    .badge{display:inline-block; min-width:1.8rem; text-align:center; padding:.2rem .5rem; border-radius:999px; background:#16a34a; color:#051018; font-weight:700}
+    .small{font-size:.92rem}
+    .footer{margin-top:18px; font-size:.9rem}
+    a{color:#67e8f9}
+    .req{color:#fca5a5}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>DESCUBRE CUÁL ES TU ESTILO DE COMUNICACIÓN</h1>
+      <p class="muted small">Marca una opción por pregunta (12 en total). Al final verás tus totales por estilo (I, D, R, P) y tu estilo dominante. ¡El total debe sumar 12!</p>
+
+      <form id="formTest" class="grid" novalidate>
+        <!-- Preguntas -->
+        <div id="questions"></div>
+
+        <div class="row">
+          <button type="button" id="btnCalcular">Calcular resultado</button>
+          <button type="reset" class="secondary" id="btnLimpiar">Limpiar</button>
+          <button type="button" class="secondary" id="btnCSV" title="Exporta un registro CSV de tus respuestas">Exportar CSV</button>
+          <button type="button" class="secondary" id="btnImprimir" title="Imprime o guarda en PDF">Imprimir / PDF</button>
+        </div>
+      </form>
+
+      <section id="salida" class="result" hidden>
+        <h2>Resultado</h2>
+        <div class="totals">
+          <div class="pill"><strong>I</strong><div id="tI">0</div></div>
+          <div class="pill"><strong>D</strong><div id="tD">0</div></div>
+          <div class="pill"><strong>R</strong><div id="tR">0</div></div>
+          <div class="pill"><strong>P</strong><div id="tP">0</div></div>
+        </div>
+        <p class="small" id="dominante"></p>
+        <details>
+          <summary>Descripción breve de estilos</summary>
+          <ul class="small">
+            <li><strong>I – Influencia / Social</strong>: energía social, entusiasmo, conexión.</li>
+            <li><strong>D – Dominancia / Dirección</strong>: decisión, asertividad, logro.</li>
+            <li><strong>R – Relacional / Estabilidad</strong>: cooperación, armonía, fiabilidad.</li>
+            <li><strong>P – Prudencia / Precisión</strong>: método, detalle, organización.</li>
+          </ul>
+        </details>
+      </section>
+
+      <div class="footer muted">
+        <p>Basado en el cuestionario proporcionado. Este formulario calcula internamente el mapeo <em>(a–d → I/D/R/P)</em> según la clave incluida.</p>
+        <p class="small">Sugerencia: puedes publicar este archivo como página con <em>GitHub Pages</em> (sube <code>index.html</code> y activa <em>Settings → Pages</em>).</p>
+      </div>
+    </div>
+  </main>
+
+<script>
+// Texto de preguntas y opciones (en español)
+const data = [
+  { n:1,  t:"En una reunión social grande, lo más probable es que:",
+    a:"interactúes con muchas personas diferentes, incluyendo desconocidos.",
+    b:"hables principalmente uno a uno con personas que ya conoces.",
+    c:"aproveches la oportunidad para establecer contactos importantes.",
+    d:"te retires tan pronto como sea educado hacerlo." },
+  { n:2,  t:"Cuando llegas por primera vez a una reunión, generalmente estás...",
+    a:"...un poco tarde e intentas entrar por detrás sin ser notado/a.",
+    b:"...intencionalmente un poco tarde, te gusta llegar cuando las cosas ya han comenzado.",
+    c:"...llegas justo a tiempo y te impacientas si la reunión comienza tarde.",
+    d:"...llegas temprano para poder estar listo/a y organizado/a cuando comienza la reunión." },
+  { n:3,  t:"De estas cuatro características de personalidad, consideras que tu más fuerte es:",
+    a:"Compasión.", b:"Asertividad.", c:"Imaginación.", d:"Persistencia." },
+  { n:4,  t:"La afirmación que describe más acertadamente quién eres es:",
+    a:"Sensato/a y frugal.", b:"Racional y rápido/a de mente.", c:"Sensible y confiable.", d:"Creativo/a y enérgico/a." },
+  { n:5,  t:"¿Qué te atrae más?",
+    a:"Tomar acción en un riesgo calculado.", b:"Crear relaciones humanas armoniosas.", c:"Descubrir el secreto detrás de un misterio complejo.", d:"Asistir a un evento social emocionante." },
+  { n:6,  t:"La interacción nueva y no rutinaria con otros:",
+    a:"...normalmente te estimula y te llena de energía.",
+    b:"...te revitaliza, si tienes una conexión especial con alguien en el proceso.",
+    c:"...te agota y no tienes miedo de hacerlo saber a las personas.",
+    d:"...te agota, por lo que te retiras silenciosamente cuando nadie está mirando." },
+  { n:7,  t:"Cuando realizas proyectos en grupo, ¿qué parte del proceso es más importante para ti?",
+    a:"Crear relaciones con las personas.", b:"Resolver quién desempeñará qué papel en el proyecto.", c:"Organizar la forma en que se realizará el proyecto.", d:"Asegurarte de que el proceso de hacerlo sea divertido y emocionante." },
+  { n:8,  t:"¿Cuál descripción se ajusta más a ti?",
+    a:"Trabajador/a y ambicioso/a.", b:"Animado/a y sociable.", c:"Enfocado/a y eficiente.", d:"Cooperativo/a y amable." },
+  { n:9,  t:"La mayor parte del tiempo, cuando trabajas, prefieres:",
+    a:"Hacer tu trabajo tranquilamente por tu cuenta.", b:"Ser parte integral de un equipo que trabaja en conjunto.", c:"Influenciar al equipo en nuevas y creativas direcciones.", d:"Ser el líder y estructurador del equipo." },
+  { n:10, t:"¿Qué es más admirable?",
+    a:"La capacidad de organizarse y ser metódico/a.", b:"La capacidad de tomar el control en una situación caótica.", c:"La capacidad de motivar a otros para que tengan éxito.", d:"La capacidad de hacer que las personas se sientan cómodas e incluidas." },
+  { n:11, t:"En términos de comedia, me identifico más estrechamente con las personas que pueden:",
+    a:"...contar una historia divertida y conmovedora.", b:"...contar un buen chiste.", c:"...crear grandes personajes a través del movimiento, la voz, el vestuario, etc.", d:"...contar un ingenioso juego de palabras o juego de palabras." },
+  { n:12, t:"Si surge un conflicto entre un(a) amigo(a) y yo, mi primera reacción es:",
+    a:"...asegurarme de que entienda mi posición sobre las cosas.", b:"...asegurarme de que la relación no se dañe.", c:"...evitar a esa persona por un tiempo.", d:"...encontrar un compromiso donde ambos obtengamos al menos parte de lo que queremos." }
+];
+
+// Clave de mapeo (pregunta -> opción -> estilo)
+const key = {
+  1:{a:'I', b:'R', c:'D', d:'P'},
+  2:{a:'R', b:'I', c:'D', d:'P'},
+  3:{a:'R', b:'D', c:'I', d:'P'},
+  4:{a:'P', b:'D', c:'R', d:'I'},
+  5:{a:'D', b:'R', c:'P', d:'I'},
+  6:{a:'I', b:'R', c:'D', d:'P'},
+  7:{a:'I', b:'D', c:'P', d:'R'},
+  8:{a:'D', b:'I', c:'P', d:'R'},
+  9:{a:'P', b:'R', c:'I', d:'D'},
+ 10:{a:'P', b:'D', c:'I', d:'R'},
+ 11:{a:'R', b:'D', c:'I', d:'P'},
+ 12:{a:'D', b:'R', c:'P', d:'I'}
+};
+
+const qHost = document.getElementById('questions');
+qHost.innerHTML = data.map(q => renderQ(q)).join('');
+
+function renderQ(q){
+  return `
+  <fieldset>
+    <legend>Pregunta ${q.n}</legend>
+    <p class="q">${q.t}</p>
+    <div class="q">
+      ${['a','b','c','d'].map(k=>renderOpt(q.n,k,q[k])).join('')}
+    </div>
+  </fieldset>`;
+}
+function renderOpt(n, k, txt){
+  const id = `q${n}_${k}`;
+  return `
+    <div class="opt">
+      <input type="radio" id="${id}" name="q${n}" value="${k}" required />
+      <label for="${id}"><strong>${k}.</strong> ${txt}</label>
+    </div>`;
+}
+
+// Utilidades
+function getAnswers(){
+  const ans = {}; let filled = 0;
+  for (let i=1;i<=12;i++){
+    const checked = document.querySelector(`input[name=q${i}]:checked`);
+    if(checked){ ans[i] = checked.value; filled++; }
+  }
+  return {ans, filled};
+}
+
+function computeTotals(ans){
+  const totals = {I:0,D:0,R:0,P:0};
+  for (const qn of Object.keys(ans)){
+    const opt = ans[qn];
+    const letter = key[qn][opt];
+    totals[letter]++;
+  }
+  return totals;
+}
+
+function showResult(totals){
+  document.getElementById('tI').textContent = totals.I;
+  document.getElementById('tD').textContent = totals.D;
+  document.getElementById('tR').textContent = totals.R;
+  document.getElementById('tP').textContent = totals.P;
+  const sum = totals.I + totals.D + totals.R + totals.P;
+  const salida = document.getElementById('salida');
+  salida.hidden = false;
+
+  // Dominante
+  const max = Math.max(totals.I, totals.D, totals.R, totals.P);
+  const dom = Object.entries(totals).filter(([k,v]) => v === max).map(([k])=>k);
+  const texto = sum!==12 ?
+    `⚠️ Revisa: solo has respondido ${sum} de 12 preguntas. Marca una opción en cada pregunta.` :
+    (dom.length===1 ? `Tu estilo dominante es <span class="badge">${dom[0]}</span>.` : `Tienes estilos dominantes empatados: <span class="badge">${dom.join(' / ')}</span>.`);
+  document.getElementById('dominante').innerHTML = texto;
+}
+
+// Eventos
+const btnCalcular = document.getElementById('btnCalcular');
+btnCalcular.addEventListener('click', () => {
+  const {ans, filled} = getAnswers();
+  const totals = computeTotals(ans);
+  showResult(totals);
+  // marca preguntas faltantes
+  for (let i=1;i<=12;i++){
+    const fs = document.querySelector(`fieldset:nth-of-type(${i})`);
+    const sel = document.querySelector(`input[name=q${i}]:checked`);
+    fs.querySelectorAll('.req').forEach(e=>e.remove());
+    if(!sel){
+      const warn = document.createElement('div');
+      warn.className = 'req small';
+      warn.textContent = 'Selecciona una opción';
+      fs.appendChild(warn);
+    }
+  }
+});
+
+// Exportación CSV
+function toCSV(record){
+  const headers = ['Pregunta','Opción','Estilo'];
+  const rows = [];
+  for(let i=1;i<=12;i++){
+    const opt = record.answers[i]||'';
+    const est = opt? key[i][opt] : '';
+    rows.push([i,opt.toUpperCase?.()||'',est]);
+  }
+  rows.push([]);
+  rows.push(['Totales','I','D','R','P']);
+  rows.push(['',record.totals.I,record.totals.D,record.totals.R,record.totals.P]);
+  const all = [headers,...rows];
+  return all.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');
+}
+
+document.getElementById('btnCSV').addEventListener('click', () => {
+  const {ans} = getAnswers();
+  const totals = computeTotals(ans);
+  const csv = toCSV({answers:ans, totals});
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'estilo_comunicacion_respuestas.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Imprimir / PDF
+document.getElementById('btnImprimir').addEventListener('click', () => window.print());
+
+// Reset limpio
+document.getElementById('btnLimpiar').addEventListener('click', () => {
+  document.getElementById('salida').hidden = true;
+  document.querySelectorAll('.req').forEach(e=>e.remove());
+});
+</script>
+</body>
+</html>
